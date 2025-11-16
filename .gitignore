@@ -1,0 +1,23 @@
+*.out
+
+# Debug files
+*.dSYM/
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# logs
+*.log
+
+# graphic debugger
+*.svg
+*.dot
+*.dot.png
+
+# kek
+.vscode
+diagnostic.c
+example.c
