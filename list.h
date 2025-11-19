@@ -3,39 +3,24 @@
 
 #include <stddef.h>
 
+#define LIST_SIZE 10
+
 typedef struct {
-    size_t capacity;
-    size_t size;
-    double *data;
-    int *next_index;
-    int head;
-    int *previous_index;
-    int tail;
+    double value;
+    int next_index;
+    int previous_index;
+} node_type;
+
+typedef struct {
+    node_type nodes[LIST_SIZE];
     int free;
 } list_type;
 
-// typedef struct {
-//     double value;
-//     int next_index;
-//     int previous_index;
-// } node_type;
-//
-// typedef struct {
-//     // size_t capacity;
-//     // size_t size;
-//     // double *data;
-//     // int *next_index;
-//     // int head;
-//     // int tail;
-//     // int *previous_index;
-//     node_type nodes[1000];
-//     int free;
-// } list_type;
-
 void ConstructList(list_type *list);
 void DestructList(list_type *list);
-void FillDefault(int *index_array, int capacity);
-// void InsertElement();
+void InsertElement(list_type *list, double value, int physical_index);
+int GetHead(const list_type *list);
+int GetTail(const list_type *list);
 // void DeleteElement();
 
 #endif

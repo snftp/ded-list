@@ -16,73 +16,48 @@ void GraphicDump(const list_type *list) {
 
     FILE *tmp_dot = fopen("tmp.dot", "w");
 
-
-    fputs("digraph G{\n\trankdir=LR;\n", tmp_dot);
-
-    if (list->size == 0) {
-        fputs("\tnode [shape=ellipse, style=\"filled\", fillcolor=\"white\", fontsize=12];\n", tmp_dot);
-        fputs("\tELEMENT_HEAD[label=\"HEAD\"]\n", tmp_dot);
-        fputs("\tELEMENT_TAIL[label=\"TAIL\"]\n", tmp_dot);
-        fputs("\tELEMENT_FREE[label=\"FREE\"]\n", tmp_dot);
-
-        fputc('}', tmp_dot);
-
-        char cmd[512];
-        sprintf(cmd, "/opt/homebrew/bin/dot -Tsvg \"tmp.dot\" -o \"graphs/output_%zu_EMPTY_LIST.svg\" > \"graphs/dot.log\" 2>&1", call_count);
-        fclose(tmp_dot);
-        system(cmd);
-        call_count++;
-
-        PrintfDebugging();
-        return ;
-    }
-
+    fputs("digraph G{\n", tmp_dot);
     fputs("\tgraph [splines=ortho];\n", tmp_dot);
-    fputs("\tnode[color=\"pink\",fontsize=14];\n", tmp_dot);
-    fputs("\tedge[color=\"red\",fontcolor=\"black\",fontsize=12];\n", tmp_dot);
+    fputs("\tnode [shape=\"Mrecord\", color=\"pink\", style=\"filled\", fillcolor=\"pink\", fontsize=14];\n", tmp_dot);
     fputs("\tnodesep=0.4;\n", tmp_dot);
+    fputs("\tedge[color=\"red\"];\n", tmp_dot);
 
-    for (size_t i = 0; i <= list->size; i++) {
-        // printf("1\n");
-        fprintf(tmp_dot, "\tELEMENT%zu[group=gELEMENT%zu, shape=\"Mrecord\",style=\"filled\",fillcolor=\"pink\", label=\" data=%lg | next=%d | prev=%d\"];\n", i, i, list->data[i], list->next_index[i], list->previous_index[i]);
-        // printf("1\n\n");
-    }
-    fprintf(tmp_dot, "\tELEMENT%d[group=gELEMENT%d, shape=\"Mrecord\",style=\"filled\",fillcolor=\"white\", label=\" next=%d | prev=%d\"];\n", list->free, list->free, list->next_index[list->free], list->previous_index[list->free]);
-
-    fputs("\tedge [constraint=true];\n", tmp_dot);
-    fputs("\tELEMENT0", tmp_dot);
-    for (size_t i = 1; i <= list->size; i++) {
+    fputs("\tsubgraph {\n\t\trank = same;\n", tmp_dot);
+    for (int i = 0; i < LIST_SIZE; i++) {
         // printf("2\n");
-        fprintf(tmp_dot, " -> ELEMENT%zu", i);
+        fprintf(tmp_dot, "\t\tELEMENT%d [label = <<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLSPACING=\"2\" ROWS=\"*\" BGCOLOR=\"white\"> \n"
+                         "\t\t  <TR> <TD BGCOLOR=\"pink\" PORT=\"index\"> %d        </TD> </TR>                                        \n"
+                         "\t\t  <TR> <TD BGCOLOR=\"pink\" PORT=\"value\"> value %lg </TD> </TR>                                        \n"
+                         "\t\t  <TR> <TD BGCOLOR=\"pink\" PORT=\"prev\">  prev  %d  </TD> </TR>                                        \n"
+                         "\t\t  <TR> <TD BGCOLOR=\"pink\" PORT=\"next\">  next  %d  </TD> </TR>                                        \n"
+                         "\t\t</TABLE>>];                                                                            \n",
+                        i, i, (list->nodes[i]).value, (list->nodes[i]).previous_index, (list->nodes[i]).next_index);
         // printf("2\n\n");
     }
-    if (list->size < (size_t)list->free) {
-        fprintf(tmp_dot, " -> ELEMENT%d", list->free);
+
+    for (int i = 0; i < LIST_SIZE; i++) {
+        fprintf(tmp_dot, "\t\tELEMENT%d -> ELEMENT%d; \n",
+                i, (list->nodes[i]).next_index);
+        fprintf(tmp_dot, "\t\tELEMENT%d -> ELEMENT%d [color=\"pink\"]; \n",
+                i, (list->nodes[i]).previous_index);
     }
-    fputs(" [style=invis, weight=10000];\n", tmp_dot);
+    fputs("\t} \n", tmp_dot);
 
-    for (size_t i = 0; i <= list->size; i++) {
-        // printf("3\n");
-        fprintf(tmp_dot, "\tELEMENT%zu -> ELEMENT%d [constraint=false, color=\"pink\", fontcolor=\"black\", fontsize=12];\n", i, list->next_index[i]);
-        fprintf(tmp_dot, "\tELEMENT%zu -> ELEMENT%d [constraint=false, color=\"red\", fontcolor=\"black\", fontsize=12];\n", i, list->previous_index[i]);
-        // printf("3\n\n");
-    }
+    fprintf(tmp_dot, "\tELEMENT_FREE[shape=ellipse, style=\"filled\", fillcolor=\"white\", fontsize=12, label=\"FREE=%d\"]; \n", list->free);
+    fprintf(tmp_dot, "\tELEMENT_FREE -> ELEMENT%d; \n", list->free);
 
-    fputs("\tnode [shape=ellipse, style=\"filled\", fillcolor=\"white\", fontsize=12];\n", tmp_dot);
+    int head_index = GetHead(list);
+    fprintf(tmp_dot, "\tELEMENT_HEAD[shape=ellipse, style=\"filled\", fillcolor=\"white\", fontsize=12, label=\"HEAD=%d\"]; \n", head_index);
+    fprintf(tmp_dot, "\tELEMENT_HEAD -> ELEMENT%d; \n", head_index);
 
-    fprintf(tmp_dot, "\tELEMENT_HEAD[group=gELEMENT%d, label=\"HEAD=%d\"]\n", list->head, list->head);
-    fprintf(tmp_dot, "\tELEMENT_TAIL[group=gELEMENT%d, label=\"TAIL=%d\"]\n", list->tail, list->tail);
-    fprintf(tmp_dot, "\tELEMENT_FREE[group=gELEMENT%d, label=\"FREE=%d\"]\n", list->free, list->free);
-
-    fputs("\tedge [constraint=false, color=\"pink\"]\n", tmp_dot);
-    fprintf(tmp_dot, "\tELEMENT_HEAD -> ELEMENT%d [tailport=e, headport=s];\n", list->head);
-    fprintf(tmp_dot, "\tELEMENT_TAIL -> ELEMENT%d [tailport=e, headport=s];\n", list->tail);
-    fprintf(tmp_dot, "\tELEMENT_FREE -> ELEMENT%d [tailport=e, headport=s];\n", list->free);
+    int tail_index = GetTail(list);
+    fprintf(tmp_dot, "\tELEMENT_TAIL[shape=ellipse, style=\"filled\", fillcolor=\"white\", fontsize=12, label=\"TAIL=%d\"]; \n", tail_index);
+    fprintf(tmp_dot, "\tELEMENT_TAIL -> ELEMENT%d; \n", tail_index);
 
     fputc('}', tmp_dot);
 
     char cmd[512];
-    sprintf(cmd, "/opt/homebrew/bin/dot -Tsvg \"tmp.dot\" -o \"graphs/output_%zu.svg\" > \"graphs/dot.log\" 2>&1", call_count);
+    sprintf(cmd, "/opt/homebrew/bin/dot -Tsvg \"tmp.dot\" -o \"graphs/output_%zu.svg\"" /* > \"graphs/dot.log\" 2>&1"*/, call_count);
     fclose(tmp_dot);
     system(cmd);
     call_count++;
