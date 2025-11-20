@@ -20,28 +20,46 @@ void GraphicDump(const list_type *list) {
     fputs("\tgraph [splines=ortho];\n", tmp_dot);
     fputs("\tnode [shape=\"Mrecord\", color=\"pink\", style=\"filled\", fillcolor=\"pink\", fontsize=14];\n", tmp_dot);
     fputs("\tnodesep=0.4;\n", tmp_dot);
-    fputs("\tedge[color=\"red\"];\n", tmp_dot);
+    fputs("\tedge[color=\"pink\"];\n", tmp_dot);
 
     fputs("\tsubgraph {\n\t\trank = same;\n", tmp_dot);
-    for (int i = 0; i < LIST_SIZE; i++) {
+
+    fprintf(tmp_dot, "\t\tELEMENT%d [shape=ellipse, label = <<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLSPACING=\"2\" ROWS=\"*\" BGCOLOR=\"white\"> \n"
+                         "\t\t  <TR> <TD BGCOLOR=\"pink\" PORT=\"index\"> %d        </TD> </TR>                                        \n"
+                         "\t\t  <TR> <TD BGCOLOR=\"pink\" PORT=\"value\"> value %lg </TD> </TR>                                        \n"
+                         "\t\t  <TR> <TD BGCOLOR=\"pink\" PORT=\"prev\">  prev  %d  </TD> </TR>                                        \n"
+                         "\t\t  <TR> <TD BGCOLOR=\"pink\" PORT=\"next\">  next  %d  </TD> </TR>                                        \n"
+                         "\t\t</TABLE>>];                                                                                              \n",
+                0, 0, (list->nodes[i]).value, (list->nodes[i]).previous_index, (list->nodes[i]).next_index);
+
+    // TODO: рисовать нулевой элемент отдельно и для него отрисовывать next и prev
+
+    // TODO: рисовать список пустой памяти красиво
+    for (int i = 1; i < LIST_SIZE; i++) {
         // printf("2\n");
         fprintf(tmp_dot, "\t\tELEMENT%d [label = <<TABLE BORDER=\"0\" CELLBORDER=\"0\" CELLSPACING=\"2\" ROWS=\"*\" BGCOLOR=\"white\"> \n"
                          "\t\t  <TR> <TD BGCOLOR=\"pink\" PORT=\"index\"> %d        </TD> </TR>                                        \n"
                          "\t\t  <TR> <TD BGCOLOR=\"pink\" PORT=\"value\"> value %lg </TD> </TR>                                        \n"
                          "\t\t  <TR> <TD BGCOLOR=\"pink\" PORT=\"prev\">  prev  %d  </TD> </TR>                                        \n"
                          "\t\t  <TR> <TD BGCOLOR=\"pink\" PORT=\"next\">  next  %d  </TD> </TR>                                        \n"
-                         "\t\t</TABLE>>];                                                                            \n",
-                        i, i, (list->nodes[i]).value, (list->nodes[i]).previous_index, (list->nodes[i]).next_index);
+                         "\t\t</TABLE>>];                                                                                              \n",
+                i, i, (list->nodes[i]).value, (list->nodes[i]).previous_index, (list->nodes[i]).next_index);
         // printf("2\n\n");
     }
 
+    for (int i = 0; i < LIST_SIZE - 1; i++) {
+        fprintf(tmp_dot, "\t\tELEMENT%d -> ELEMENT%d [constraint=true, style=invis, weight=10000]; \n",
+                i, i + 1);
+    }
+
+    fputs("\t\tedge [constraint=false, weight=10];\n", tmp_dot);
     for (int i = 0; i < LIST_SIZE; i++) {
         fprintf(tmp_dot, "\t\tELEMENT%d -> ELEMENT%d; \n",
                 i, (list->nodes[i]).next_index);
-        fprintf(tmp_dot, "\t\tELEMENT%d -> ELEMENT%d [color=\"pink\"]; \n",
-                i, (list->nodes[i]).previous_index);
     }
     fputs("\t} \n", tmp_dot);
+
+    fputs("\tedge[color=\"black\"];\n", tmp_dot);
 
     fprintf(tmp_dot, "\tELEMENT_FREE[shape=ellipse, style=\"filled\", fillcolor=\"white\", fontsize=12, label=\"FREE=%d\"]; \n", list->free);
     fprintf(tmp_dot, "\tELEMENT_FREE -> ELEMENT%d; \n", list->free);

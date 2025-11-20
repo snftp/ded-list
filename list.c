@@ -4,15 +4,28 @@
 #include <stdlib.h>
 #include <math.h>
 
-// void DeleteElement(list_type *list, size_t index) {
-// }
-
 int GetHead(const list_type *list) {
     return list->nodes[0].next_index;
 }
 
 int GetTail(const list_type *list) {
     return list->nodes[0].previous_index;
+}
+
+void FillList(list_type *list, double value) { // TODO: rename
+    InsertElement(list, value, GetTail(list));
+}
+
+void DeleteElement(list_type *list, int physical_index) {
+    // list->nodes[physical_index] = { .next_index = list->free };
+    list->free = physical_index;
+
+    list->nodes[list->nodes[physical_index].next_index].previous_index = list->nodes[physical_index].previous_index;
+    list->nodes[list->nodes[physical_index].previous_index].next_index = list->nodes[physical_index].next_index;
+
+    list->nodes[physical_index] = {};
+
+    GraphicDump(list);
 }
 
 void InsertElement(list_type *list, double value, int physical_index) {
@@ -25,7 +38,6 @@ void InsertElement(list_type *list, double value, int physical_index) {
         .next_index = (list->nodes[physical_index]).next_index,
         .previous_index = physical_index
     };
-    printf("%d %d\n", physical_index, list->nodes[new_physical_index].previous_index);
 
     (list->nodes[physical_index]).next_index = new_physical_index;
 
@@ -36,7 +48,7 @@ void ConstructList(list_type *list) {
     list->nodes[0] = {};
 
     for (int i = 1; i < LIST_SIZE - 1; i++) {
-        list->nodes[i] = { .value = 0.0, .next_index = i + 1, .previous_index = i - 1};
+        list->nodes[i] = { .value = 0.0, .next_index = i + 1, .previous_index = 0 };
     }
 
     list->nodes[LIST_SIZE - 1] = { .previous_index = LIST_SIZE - 2 };
