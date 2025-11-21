@@ -9,32 +9,24 @@ int main() {
     ConstructList(&list);
 
     printf("2\n");
-    FillList(&list, 10.0);
+    InsertAtTheEnd(&list, 10.0);
 
     printf("3\n");
-    FillList(&list, 20.0);
+    InsertAtTheEnd(&list, 20.0);
 
     printf("4\n");
-    FillList(&list, 30.0);
+    InsertAtTheEnd(&list, 30.0);
 
     printf("5\n");
-    FillList(&list, 40.0);
+    DeleteElement(&list, 2);
 
     printf("6\n");
-    InsertElement(&list, 50.0, 2);
+    DeleteElement(&list, 1);
 
     printf("7\n");
-    InsertElement(&list, 20.0, 3);
+    InsertAtTheEnd(&list, 20.0);
 
     printf("8\n");
-    FillList(&list, 40.0);
-//
-//     printf("9\n");
-//     DeleteElement(&list, 2);
-//     printf("10\n");
-//     InsertElement(&list, 20.0, 1);
-
-    printf("11\n");
     DestructList(&list);
     return 0;
 }
